@@ -62,12 +62,12 @@ router.get("/add-meal", async (req, res, next) => {
       date: new Date(),
       foodList: [
         {
-          foodItem: "615222b511efc5d8bf6f142d",
+          foodItem: await FoodItem.findOne({ name: "Ground Beef" }).exec(),
           servingSize: 454,
           servingUnit: "g",
         },
         {
-          foodItem: "615222b511efc5d8bf6f142e",
+          foodItem: await FoodItem.findOne({ name: "Tomato" }).exec(),
           servingSize: 36,
           servingUnit: "g",
         },
@@ -76,6 +76,7 @@ router.get("/add-meal", async (req, res, next) => {
     await meal.save();
     res.send("Added Meal");
   } catch (err) {
+    console.log(err);
     res.send("Something Went Wrong");
   }
 });

@@ -6,4 +6,6 @@ var UserSchema = new mongoose.Schema({
   hashedPassword: { type: String, required: true },
 });
 
+// todo add recently used fooditems array per user
+
 module.exports = mongoose.model("User", UserSchema);
