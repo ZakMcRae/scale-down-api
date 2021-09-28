@@ -13,6 +13,7 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
 var indexRouter = require("./routes/index");
+var userRouter = require("./routes/user");
 
 var app = express();
 
@@ -23,5 +24,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+app.use("/user/", userRouter);
 
 module.exports = app;
