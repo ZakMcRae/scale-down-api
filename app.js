@@ -52,4 +52,10 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/user/", userRouter);
 
+// default error handler
+app.use(function (err, req, res, next) {
+  console.error(err.stack);
+  res.json({ status: err.status, detail: err.message });
+});
+
 module.exports = app;
