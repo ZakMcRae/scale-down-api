@@ -4,19 +4,19 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+
+var indexRouter = require("./routes/index");
+var userRouter = require("./routes/user");
+
+var app = express();
 
 // db config
 const mongoDb = process.env.DB_URL;
 mongoose.connect(mongoDb, { useUnifiedTopology: true, useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
-
-var indexRouter = require("./routes/index");
-var userRouter = require("./routes/user");
-
-var app = express();
 
 // extracts userId and sets on req.userId if token sent in header
 //
