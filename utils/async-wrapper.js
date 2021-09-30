@@ -1,5 +1,5 @@
 // wrap an endpoint function with a try catch block to pass on to next
-exports.asyncWrapper = (func) => {
+const asyncWrapper = (func) => {
   return async function wrappedFn(req, res, next) {
     try {
       await func(req, res);
@@ -8,3 +8,5 @@ exports.asyncWrapper = (func) => {
     }
   };
 };
+
+module.exports = asyncWrapper;

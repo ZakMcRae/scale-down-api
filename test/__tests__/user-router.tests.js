@@ -1,5 +1,5 @@
 const { test, expect } = require("@jest/globals");
-const userRouter = require("../../routes/user");
+const userRouter = require("../../routes/user-routes");
 
 const request = require("supertest");
 const express = require("express");

@@ -1,19 +1,23 @@
 const User = require("../models/user");
-const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// get user info
-router.get("/", async (req, res, next) => {
+// get authorized users info
+exports.getUserInfo = async (req, res, next) => {
+  // req.userId is set by middleware which extracts token info
   if (req.userId) {
     const user = await User.findById(req.userId);
+
+    // check if user exists in database
+    if (user === null) {
+      return res.status(404).json({ detail: "User not found" });
+    }
     return res.status(200).json({ userId: user.id, userName: user.userName });
   }
   return res.status(401).json({ detail: "Not Authorized" });
-});
+};
 
-// create a new user
-router.post("/", async (req, res, next) => {
+exports.createNewUser = async (req, res, next) => {
   // check if username exists in database and reject request if true
   const userInDb = await User.findOne({ userName: req.body.userName });
 
@@ -31,10 +35,9 @@ router.post("/", async (req, res, next) => {
   await newUser.save();
 
   res.status(200).json({ id: newUser.id, userName: newUser.userName });
-});
+};
 
-// generate a 30day auth token for existing user
-router.post("/token", async (req, res, next) => {
+exports.createAuthToken = async (req, res, next) => {
   try {
     const user = await User.findOne({ userName: req.body.userName });
 
@@ -56,6 +59,4 @@ router.post("/token", async (req, res, next) => {
   } catch (err) {
     return res.status(500).send("Something went wrong");
   }
-});
-
-module.exports = router;
+};

@@ -7,8 +7,8 @@ var logger = require("morgan");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
-var indexRouter = require("./routes/index");
-var userRouter = require("./routes/user");
+var indexRouter = require("./routes");
+var userRouter = require("./routes/user-routes");
 
 var app = express();
 
@@ -42,15 +42,15 @@ const setUserFromToken = async (req, res, next) => {
   }
 };
 
+app.use("/", indexRouter);
+app.use("/user/", userRouter);
+
 app.use(logger("dev"));
 app.use(setUserFromToken);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
-app.use("/", indexRouter);
-app.use("/user/", userRouter);
 
 // default error handler
 app.use(function (err, req, res, next) {
