@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: "./production.env" });
 
 var express = require("express");
 var path = require("path");

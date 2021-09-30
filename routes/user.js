@@ -6,10 +6,10 @@ const jwt = require("jsonwebtoken");
 // get user info
 router.get("/", async (req, res, next) => {
   if (req.userId) {
-    return res.send(req.userId);
+    const user = await User.findById(req.userId);
+    return res.status(200).json({ userId: user.id, userName: user.userName });
   }
-
-  res.send("Welcome Guest");
+  return res.status(401).json({ detail: "Not Authorized" });
 });
 
 // create a new user
@@ -30,7 +30,7 @@ router.post("/", async (req, res, next) => {
 
   await newUser.save();
 
-  res.send(`New User Created - ${newUser.userName}`);
+  res.status(200).json({ id: newUser.id, userName: newUser.userName });
 });
 
 // generate a 30day auth token for existing user
