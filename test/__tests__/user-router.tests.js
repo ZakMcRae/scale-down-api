@@ -125,3 +125,19 @@ describe("tests of put /user - editUserInfo", () => {
     expect(res.body.detail).toBe("Username is taken");
   });
 });
+
+describe("tests of delete /user - deleteExistingUser", () => {
+  test("successful delete of user", async () => {
+    // insert user to delete
+    sampleData.addFakeUser();
+
+    // delete user
+    const res = await request(app)
+      .delete("/user")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.detail).toBe("User deleted");
+  });
+});

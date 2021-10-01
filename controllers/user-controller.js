@@ -57,8 +57,6 @@ exports.createAuthToken = async (req, res, next) => {
   res.send({ token, token_type: "Bearer", expires_in: 2592000 });
 };
 
-//todo complete controller functins below
-
 exports.editUserInfo = async (req, res, next) => {
   if (!req.userId) {
     return res.status(401).json({ detail: "Not Authorized" });
@@ -85,6 +83,26 @@ exports.editUserInfo = async (req, res, next) => {
   return res.status(200).json({ userId: user.id, userName: user.userName });
 };
 
-exports.deleteExistingUser;
+exports.deleteExistingUser = async (req, res, next) => {
+  if (!req.userId) {
+    return res.status(401).json({ detail: "Not Authorized" });
+  }
+
+  // get user to delete
+  const user = await User.findById(req.userId);
+
+  // check if user does not exist in database
+  if (user === null) {
+    return res.status(404).json({ detail: "User not found" });
+  }
+
+  //delete and return confirmation
+  await user.delete();
+
+  return res.status(200).json({ detail: "User deleted" });
+};
+
+//todo complete controller functions below - want to finish other routes first
+
 exports.getDateTotals;
 exports.getWeekTotals;
