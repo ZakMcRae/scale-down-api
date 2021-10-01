@@ -2,7 +2,6 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// get authorized users info
 exports.getUserInfo = async (req, res, next) => {
   // req.userId is set by middleware which extracts token info
   if (req.userId) {
@@ -22,7 +21,7 @@ exports.createNewUser = async (req, res, next) => {
   const userInDb = await User.findOne({ userName: req.body.userName });
 
   if (userInDb !== null) {
-    return res.status(409).send("Username is taken");
+    return res.status(409).json({ detail: "Username is taken" });
   }
 
   // create new user and hash password
@@ -43,12 +42,12 @@ exports.createAuthToken = async (req, res, next) => {
 
     // check if user exists in database
     if (user === null) {
-      return res.status(404).send("User not found");
+      return res.status(404).json({ detail: "User not found" });
     }
 
     // check if password is correct compared to stored hashedPassword
     if (!(await bcrypt.compare(req.body.password, user.hashedPassword))) {
-      return res.status(401).send("Incorrect Password");
+      return res.status(401).json({ detail: "Incorrect Password" });
     }
 
     // create and return jwt containing user info
@@ -57,6 +56,6 @@ exports.createAuthToken = async (req, res, next) => {
     });
     res.send({ token, token_type: "Bearer", expires_in: 2592000 });
   } catch (err) {
-    return res.status(500).send("Something went wrong");
+    return res.status(500).json({ detail: "Something went wrong" });
   }
 };
