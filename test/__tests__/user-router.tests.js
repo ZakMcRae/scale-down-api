@@ -6,7 +6,7 @@ const userRouter = require("../../routes/user-routes");
 const setUserFromToken = require("../../utils/setUserFromToken");
 const request = require("supertest");
 const express = require("express");
-const User = require("../../models/user");
+const sampleData = require("../utils/sample-data");
 const app = express();
 
 app.use(setUserFromToken);
@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/user", userRouter);
 
-require("../test-db-setup");
+require("../utils/test-db-setup");
 
 describe("tests of get /user - getUserInfo", () => {
   test("unauthorized test of /user", async () => {
@@ -26,12 +26,7 @@ describe("tests of get /user - getUserInfo", () => {
 
   test("authorized test of /user", async () => {
     // insert user into database to return info from - has id to match test token
-    const user = new User({
-      userName: "matt",
-      hashedPassword: process.env.TEST_HASHED_PASSWORD,
-      _id: "61547b22c7c5959e24db1b8e",
-    });
-    await user.save();
+    sampleData.addFakeUser();
 
     // request uses specifically created test token to match user id above
     const res = await request(app)
@@ -55,11 +50,7 @@ describe("tests of post /user - createNewUser", () => {
 
   test("create new user - username taken", async () => {
     // add user to database
-    const user = new User({
-      userName: "matt",
-      hashedPassword: process.env.TEST_HASHED_PASSWORD,
-    });
-    await user.save();
+    sampleData.addFakeUser();
 
     // make request using same username
     const res = await request(app)
@@ -73,12 +64,7 @@ describe("tests of post /user - createNewUser", () => {
 describe("tests of post /user/token - createAuthToken", () => {
   test("create auth token for user", async () => {
     // insert user into database to make token for
-    const user = new User({
-      userName: "matt",
-      hashedPassword: process.env.TEST_HASHED_PASSWORD,
-      _id: "61547b22c7c5959e24db1b8e",
-    });
-    await user.save();
+    sampleData.addFakeUser();
 
     const res = await request(app)
       .post("/user/token")
@@ -97,12 +83,7 @@ describe("tests of post /user/token - createAuthToken", () => {
 
   test("incorrect password", async () => {
     // insert user into database - want username check to pass
-    const user = new User({
-      userName: "matt",
-      hashedPassword: process.env.TEST_HASHED_PASSWORD,
-      _id: "61547b22c7c5959e24db1b8e",
-    });
-    await user.save();
+    sampleData.addFakeUser();
 
     // send request with an incorrect password
     const res = await request(app)
@@ -110,5 +91,37 @@ describe("tests of post /user/token - createAuthToken", () => {
       .send({ userName: "matt", password: "abc" });
     expect(res.status).toBe(401);
     expect(res.body.detail).toBe("Incorrect Password");
+  });
+});
+
+describe("tests of put /user - editUserInfo", () => {
+  test("successful edit of user info", async () => {
+    // insert user into database - want username check to pass
+    sampleData.addFakeUser();
+
+    // edit user info
+    const res = await request(app)
+      .put("/user")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({ userName: "jim" });
+    expect(res.status).toBe(200);
+    expect(res.body.userName).toBe("jim");
+  });
+
+  test("username is taken", async () => {
+    // insert user into database - want username check to pass
+    sampleData.addFakeUser();
+
+    // edit user info
+    const res = await request(app)
+      .put("/user")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({ userName: "matt" });
+    expect(res.status).toBe(409);
+    expect(res.body.detail).toBe("Username is taken");
   });
 });
