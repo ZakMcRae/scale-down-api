@@ -9,6 +9,7 @@ const setUserFromToken = require("./utils/setUserFromToken");
 
 var indexRouter = require("./routes");
 var userRouter = require("./routes/user-routes");
+var foodRouter = require("./routes/food-routes");
 
 var app = express();
 
@@ -20,6 +21,7 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 
 app.use("/", indexRouter);
 app.use("/user/", userRouter);
+app.use("/food/", foodRouter);
 
 app.use(logger("dev"));
 app.use(setUserFromToken);
