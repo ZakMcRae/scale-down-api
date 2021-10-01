@@ -4,8 +4,8 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const setUserFromToken = require("./utils/setUserFromToken");
 
 var indexRouter = require("./routes");
 var userRouter = require("./routes/user-routes");
@@ -17,30 +17,6 @@ const mongoDb = process.env.DB_URL;
 mongoose.connect(mongoDb, { useUnifiedTopology: true, useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
-
-// extracts userId and sets on req.userId if token sent in header
-//
-// can be used to check if authorized on routes
-// i.e. if !(req.userId) return res.status(401).send('Unauthorized')
-const setUserFromToken = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-
-    if (authHeader === undefined) {
-      return next();
-    }
-
-    const tokenPayload = await jwt.verify(
-      authHeader.slice(7),
-      process.env.JWT_SECRET
-    );
-    req.userId = tokenPayload.user;
-
-    next();
-  } catch (err) {
-    return res.status(500).send("Something went wrong");
-  }
-};
 
 app.use("/", indexRouter);
 app.use("/user/", userRouter);
