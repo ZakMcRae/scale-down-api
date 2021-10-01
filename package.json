@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "DEBUG=scale-down:* nodemon ./bin/www",
-    "test": "jest"
+    "test": "jest",
+    "watchtest": "jest --watch"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

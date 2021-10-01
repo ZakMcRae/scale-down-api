@@ -1,4 +1,4 @@
-const { beforeAll, afterAll } = require("@jest/globals");
+const { beforeAll, beforeEach, afterAll } = require("@jest/globals");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 
@@ -18,6 +18,14 @@ beforeAll(async () => {
   });
   mongoose.connection.once("open", () => {
     console.log(`MongoDB successfully connected to ${mongoUri}`);
+  });
+});
+
+beforeEach(async () => {
+  // drop collections before each test - stops unwanted side effects between tests
+  const collections = Object.keys(mongoose.connection.collections);
+  collections.map(async (collection) => {
+    await mongoose.connection.collections[collection].deleteMany();
   });
 });
 
