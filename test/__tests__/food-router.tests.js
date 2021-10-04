@@ -63,8 +63,8 @@ describe("tests of post /food - createNewFoodItem", () => {
     expect(res.body.calories).toBe(18);
   });
 
-  test("failure - missing required food item property", async () => {
-    // improper request missing the required calories property
+  test("missing required food item properties", async () => {
+    // improper request missing the required calories and carbs properties
     const res = await request(app)
       .post("/food")
       .set({
@@ -75,12 +75,11 @@ describe("tests of post /food - createNewFoodItem", () => {
         servingSize: 100,
         servingUnit: "g",
         fats: 0.2,
-        carbs: 3.9,
         proteins: 0.9,
       });
     expect(res.status).toBe(422);
-    expect(res.body.datail).toBe(
-      "Missing required food item information - calories"
+    expect(res.body.detail).toBe(
+      "Missing required food item information - calories, carbs"
     );
   });
 });

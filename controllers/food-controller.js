@@ -1,5 +1,4 @@
 const FoodItem = require("../models/food-item");
-const { body, validationResult } = require("express-validator");
 
 exports.getFoodItemInfo = async (req, res, next) => {
   // check user auth
@@ -29,9 +28,31 @@ exports.createNewFoodItem = async (req, res, next) => {
     return res.status(409).json({ detail: "Food name is taken" });
   }
 
-  // todo validate req body
-  // check if all food item properties present
-  // console.log(Object.keys(FoodItem.schema.paths));
+  // check if all food item properties present - return 422 with detail of missing info
+  const requiredFields = [
+    "name",
+    "servingSize",
+    "servingUnit",
+    "calories",
+    "fats",
+    "carbs",
+    "proteins",
+  ];
+
+  let missingFields = [];
+  for (const field of requiredFields) {
+    if (req.body[field] === undefined) {
+      missingFields.push(field);
+    }
+  }
+
+  if (missingFields.length > 0) {
+    return res.status(422).json({
+      detail: `Missing required food item information - ${missingFields.join(
+        ", "
+      )}`,
+    });
+  }
 
   // create new food and hash password
   const newFoodItem = new FoodItem({
