@@ -14,8 +14,8 @@ var MealSchema = new mongoose.Schema(
       },
     ],
   },
-  // want totals virtual property to be returned always when sent as JSON
-  { toJSON: { virtuals: true } }
+  // want totals virtual property to be returned when sent as JSON or Object
+  { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
 // calculates the totals of the meals nutirional info (calories, carbs,...)
