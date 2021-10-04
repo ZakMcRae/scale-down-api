@@ -46,48 +46,67 @@ describe("tests of get /meal:id - getMealInfo", () => {
   });
 });
 
-// describe("tests of post /meal - createNewMeal", () => {
-//   test("successful creation of a meal item", async () => {
-//     // proper request with all required info
-//     const res = await request(app)
-//       .post("/meal")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       })
-//       .send({
-//         name: "Tomato",
-//         servingSize: 100,
-//         servingUnit: "g",
-//         calories: 18,
-//         fats: 0.2,
-//         carbs: 3.9,
-//         proteins: 0.9,
-//       });
-//     expect(res.status).toBe(200);
-//     expect(res.body.name).toBe("Tomato");
-//     expect(res.body.calories).toBe(18);
-//   });
+describe("tests of post /meal - createNewMeal", () => {
+  test("successful creation of a meal", async () => {
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
 
-//   test("missing required meal item properties", async () => {
-//     // improper request missing the required calories and carbs properties
-//     const res = await request(app)
-//       .post("/meal")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       })
-//       .send({
-//         name: "Tomato",
-//         servingSize: 100,
-//         servingUnit: "g",
-//         fats: 0.2,
-//         proteins: 0.9,
-//       });
-//     expect(res.status).toBe(422);
-//     expect(res.body.detail).toBe(
-//       "Missing required meal item information - calories, carbs"
-//     );
-//   });
-// });
+    // proper request with all required info
+    const res = await request(app)
+      .post("/meal")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        user: "61547b22c7c5959e24db1b8e",
+        name: "Dinner",
+        date: Date.now(),
+        foodList: [
+          {
+            foodItem: "61546e2e75b78614c8ff7de3",
+            servingSize: 50,
+            servingUnit: "g",
+          },
+          {
+            foodItem: "61546e2e75b78614c8ff7de4",
+            servingSize: 10,
+            servingUnit: "g",
+          },
+        ],
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe("Dinner");
+    expect(res.body.totals.calories).toBe(167.8);
+  });
+
+  test("missing required meal properties", async () => {
+    // improper request missing the required name and servingSize of item 2
+    const res = await request(app)
+      .post("/meal")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        user: "61547b22c7c5959e24db1b8e",
+        date: Date.now(),
+        foodList: [
+          {
+            foodItem: "61546e2e75b78614c8ff7de3",
+            servingSize: 50,
+            servingUnit: "g",
+          },
+          {
+            foodItem: "61546e2e75b78614c8ff7de4",
+            servingUnit: "g",
+          },
+        ],
+      });
+    expect(res.status).toBe(422);
+    expect(res.body.detail).toBe(
+      "Missing required meal item information - name, servingSize of foodList 1"
+    );
+  });
+});
 
 // describe("tests of put /meal:id - editMealInfo", () => {
 //   test("success - edit item", async () => {

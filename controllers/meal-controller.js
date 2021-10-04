@@ -20,60 +20,63 @@ exports.getMealInfo = async (req, res, next) => {
   return res.status(200).json(meal);
 };
 
-// exports.createNewMeal = async (req, res, next) => {
-//   // check user auth
-//   if (!req.userId) {
-//     return res.status(401).json({ detail: "Not Authorized" });
-//   }
+exports.createNewMeal = async (req, res, next) => {
+  // check user auth
+  if (!req.userId) {
+    return res.status(401).json({ detail: "Not Authorized" });
+  }
 
-//   // check if mealname exists in database and reject request if true
-//   const mealInDb = await Meal.findOne({ mealName: req.body.mealName });
+  // check if all meal properties present - return 422 with detail of missing info
+  let missingFields = [];
 
-//   if (mealInDb !== null) {
-//     return res.status(409).json({ detail: "Meal name is taken" });
-//   }
+  if (req.body.name === undefined) missingFields.push("name");
+  if (req.body.user === undefined) missingFields.push("user");
+  if (req.body.foodList === undefined) missingFields.push("foodList");
+  if (req.body.foodList !== undefined) {
+    req.body.foodList.map((food, index) => {
+      if (food.foodItem === undefined) {
+        missingFields.push(`foodItem of foodList ${index}`);
+      }
+      if (food.servingSize === undefined) {
+        missingFields.push(`servingSize of foodList ${index}`);
+      }
+      if (food.servingUnit === undefined) {
+        missingFields.push(`servingUnit of foodList ${index}`);
+      }
+    });
+  }
 
-//   // check if all meal item properties present - return 422 with detail of missing info
-//   const requiredFields = [
-//     "name",
-//     "servingSize",
-//     "servingUnit",
-//     "calories",
-//     "fats",
-//     "carbs",
-//     "proteins",
-//   ];
+  if (missingFields.length > 0) {
+    return res.status(422).json({
+      detail: `Missing required meal item information - ${missingFields.join(
+        ", "
+      )}`,
+    });
+  }
 
-//   let missingFields = [];
-//   for (const field of requiredFields) {
-//     if (req.body[field] === undefined) {
-//       missingFields.push(field);
-//     }
-//   }
+  // create new meal
+  const newMeal = new Meal({
+    user: req.body.user,
+    name: req.body.name,
+    foodList: req.body.foodList.map((food) => {
+      return {
+        foodItem: food.foodItem,
+        servingSize: food.servingSize,
+        servingUnit: food.servingUnit,
+      };
+    }),
+  });
 
-//   if (missingFields.length > 0) {
-//     return res.status(422).json({
-//       detail: `Missing required meal item information - ${missingFields.join(
-//         ", "
-//       )}`,
-//     });
-//   }
+  await newMeal.save();
 
-//   // create new meal and hash password
-//   const newMeal = new Meal({
-//     name: req.body.name,
-//     servingSize: req.body.servingSize,
-//     servingUnit: req.body.servingUnit,
-//     calories: req.body.calories,
-//     fats: req.body.fats,
-//     carbs: req.body.carbs,
-//     proteins: req.body.proteins,
-//   });
+  // query from database to get virtual props to return
+  const returnMeal = await Meal.findById(newMeal.id).populate({
+    path: "foodList",
+    populate: { path: "foodItem", model: "FoodItem" },
+  });
 
-//   await newMeal.save();
-
-//   res.status(200).json(newMeal);
-// };
+  res.status(200).json(returnMeal);
+};
 
 // exports.editMealInfo = async (req, res, next) => {
 //   // check user auth
