@@ -133,21 +133,22 @@ exports.editFoodItemInfo = async (req, res, next) => {
   return res.status(200).json(food);
 };
 
-// exports.deleteExistingFoodItem = async (req, res, next) => {
-//   if (!req.foodId) {
-//     return res.status(401).json({ detail: "Not Authorized" });
-//   }
+exports.deleteExistingFoodItem = async (req, res, next) => {
+  // auth check
+  if (!req.userId) {
+    return res.status(401).json({ detail: "Not Authorized" });
+  }
 
-//   // get food to delete
-//   const food = await FoodItem.findById(req.foodId);
+  // get food to delete
+  const food = await FoodItem.findById(req.params.id);
 
-//   // check if food does not exist in database
-//   if (food === null) {
-//     return res.status(404).json({ detail: "FoodItem not found" });
-//   }
+  // check if food does not exist in database
+  if (food === null) {
+    return res.status(404).json({ detail: "Food not found" });
+  }
 
-//   //delete and return confirmation
-//   await food.delete();
+  //delete and return confirmation
+  await food.delete();
 
-//   return res.status(200).json({ detail: "FoodItem deleted" });
-// };
+  return res.status(200).json({ detail: "Food deleted" });
+};

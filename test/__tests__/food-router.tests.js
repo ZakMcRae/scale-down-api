@@ -169,3 +169,29 @@ describe("tests of put /food:id - editFoodItemInfo", () => {
     expect(res.body.detail).toBe("Food name is taken");
   });
 });
+
+describe("tests of delete /food:id - deleteExistingFoodItem", () => {
+  test("success - delete item", async () => {
+    // add food to delete
+    await sampleData.addFakeFoods();
+
+    const res = await request(app)
+      .delete("/food/61546e2e75b78614c8ff7de4")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.detail).toBe("Food deleted");
+  });
+
+  test("item not in database", async () => {
+    // empty database - nothing to delete
+    const res = await request(app)
+      .delete("/food/61546e2e75b78614c8ff7de4")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      });
+    expect(res.status).toBe(404);
+    expect(res.body.detail).toBe("Food not found");
+  });
+});
