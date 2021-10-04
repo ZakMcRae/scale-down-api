@@ -16,7 +16,7 @@ app.use("/food", foodRouter);
 
 require("../utils/test-db-setup");
 
-describe("tests of get /food:id", () => {
+describe("tests of get /food:id - getFoodItemInfo", () => {
   test("success - return info", async () => {
     await sampleData.addFakeFoods();
 
@@ -38,5 +38,49 @@ describe("tests of get /food:id", () => {
       });
     expect(res.status).toBe(404);
     expect(res.body.detail).toBe("Food not found");
+  });
+});
+
+describe("tests of post /food - createNewFoodItem", () => {
+  test("successful creation of a food item", async () => {
+    // proper request with all required info
+    const res = await request(app)
+      .post("/food")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        name: "Tomato",
+        servingSize: 100,
+        servingUnit: "g",
+        calories: 18,
+        fats: 0.2,
+        carbs: 3.9,
+        proteins: 0.9,
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe("Tomato");
+    expect(res.body.calories).toBe(18);
+  });
+
+  test("failure - missing required food item property", async () => {
+    // improper request missing the required calories property
+    const res = await request(app)
+      .post("/food")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        name: "Tomato",
+        servingSize: 100,
+        servingUnit: "g",
+        fats: 0.2,
+        carbs: 3.9,
+        proteins: 0.9,
+      });
+    expect(res.status).toBe(422);
+    expect(res.body.datail).toBe(
+      "Missing required food item information - calories"
+    );
   });
 });

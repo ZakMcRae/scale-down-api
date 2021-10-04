@@ -1,4 +1,5 @@
 const FoodItem = require("../models/food-item");
+const { body, validationResult } = require("express-validator");
 
 exports.getFoodItemInfo = async (req, res, next) => {
   // check user auth
@@ -7,8 +8,6 @@ exports.getFoodItemInfo = async (req, res, next) => {
   }
 
   const food = await FoodItem.findById(req.params.id).exec();
-  console.log(req.params.id);
-  console.log(food);
 
   // check if food does not exist in database
   if (food === null) {
@@ -17,24 +16,38 @@ exports.getFoodItemInfo = async (req, res, next) => {
   return res.status(200).json(food);
 };
 
-// exports.createNewFoodItem = async (req, res, next) => {
-//   // check if foodname exists in database and reject request if true
-//   const foodInDb = await FoodItem.findOne({ foodName: req.body.foodName });
+exports.createNewFoodItem = async (req, res, next) => {
+  // check user auth
+  if (!req.userId) {
+    return res.status(401).json({ detail: "Not Authorized" });
+  }
 
-//   if (foodInDb !== null) {
-//     return res.status(409).json({ detail: "Food is taken" });
-//   }
+  // check if foodname exists in database and reject request if true
+  const foodInDb = await FoodItem.findOne({ foodName: req.body.foodName });
 
-//   // create new food and hash password
-//   const newFoodItem = new FoodItem({
-//     foodName: req.body.foodName,
-//     hashedPassword: "hashedPassword",
-//   });
+  if (foodInDb !== null) {
+    return res.status(409).json({ detail: "Food name is taken" });
+  }
 
-//   await newFoodItem.save();
+  // todo validate req body
+  // check if all food item properties present
+  // console.log(Object.keys(FoodItem.schema.paths));
 
-//   res.status(200).json({ id: newFoodItem.id, foodName: newFoodItem.foodName });
-// };
+  // create new food and hash password
+  const newFoodItem = new FoodItem({
+    name: req.body.name,
+    servingSize: req.body.servingSize,
+    servingUnit: req.body.servingUnit,
+    calories: req.body.calories,
+    fats: req.body.fats,
+    carbs: req.body.carbs,
+    proteins: req.body.proteins,
+  });
+
+  await newFoodItem.save();
+
+  res.status(200).json(newFoodItem);
+};
 
 // exports.editFoodItemInfo = async (req, res, next) => {
 //   if (!req.foodId) {
