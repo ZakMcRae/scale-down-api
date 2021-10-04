@@ -70,31 +70,68 @@ exports.createNewFoodItem = async (req, res, next) => {
   res.status(200).json(newFoodItem);
 };
 
-// exports.editFoodItemInfo = async (req, res, next) => {
-//   if (!req.foodId) {
-//     return res.status(401).json({ detail: "Not Authorized" });
-//   }
+exports.editFoodItemInfo = async (req, res, next) => {
+  // check user auth
+  if (!req.userId) {
+    return res.status(401).json({ detail: "Not Authorized" });
+  }
 
-//   // check if new foodname exists in database
-//   const foodInDb = await FoodItem.findOne({ foodName: req.body.foodName });
-//   if (foodInDb !== null) {
-//     return res.status(409).json({ detail: "FoodItemname is taken" });
-//   }
+  // get food that will be edited
+  let food = await FoodItem.findById(req.params.id);
 
-//   // get food to edit info
-//   const food = await FoodItem.findById(req.foodId);
+  // check if food does not exist in database
+  if (food === null) {
+    return res.status(404).json({ detail: "Food not found" });
+  }
 
-//   // check if food does not exist in database
-//   if (food === null) {
-//     return res.status(404).json({ detail: "FoodItem not found" });
-//   }
+  // check if all food item properties present - return 422 with detail of missing info
+  const requiredFields = [
+    "name",
+    "servingSize",
+    "servingUnit",
+    "calories",
+    "fats",
+    "carbs",
+    "proteins",
+  ];
 
-//   //edit and return food
-//   food.foodName = req.body.foodName;
-//   await food.save();
+  let missingFields = [];
+  for (const field of requiredFields) {
+    if (req.body[field] === undefined) {
+      missingFields.push(field);
+    }
+  }
 
-//   return res.status(200).json({ foodId: food.id, foodName: food.foodName });
-// };
+  if (missingFields.length > 0) {
+    return res.status(422).json({
+      detail: `Missing required food item information - ${missingFields.join(
+        ", "
+      )}`,
+    });
+  }
+
+  // if changing name, make sure name doesn't exist in database - no duplicate names allowed
+  if (food.name !== req.body.name) {
+    const foodInDb = await FoodItem.findOne({ name: req.body.name });
+    if (foodInDb !== null) {
+      return res.status(409).json({ detail: "Food name is taken" });
+    }
+  }
+
+  //edit, save and return food
+  food.name = req.body.name;
+  food.servingSize = req.body.servingSize;
+  food.servingUnit = req.body.servingUnit;
+  food.calories = req.body.calories;
+  food.fats = req.body.fats;
+  food.carbs = req.body.carbs;
+  food.proteins = req.body.proteins;
+  food._id = req.params.id;
+
+  await food.save();
+
+  return res.status(200).json(food);
+};
 
 // exports.deleteExistingFoodItem = async (req, res, next) => {
 //   if (!req.foodId) {

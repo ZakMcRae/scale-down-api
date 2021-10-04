@@ -83,3 +83,89 @@ describe("tests of post /food - createNewFoodItem", () => {
     );
   });
 });
+
+describe("tests of put /food:id - editFoodItemInfo", () => {
+  test("success - edit item", async () => {
+    await sampleData.addFakeFoods();
+
+    const res = await request(app)
+      .put("/food/61546e2e75b78614c8ff7de4")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        name: "Tomato",
+        servingSize: 50,
+        servingUnit: "g",
+        calories: 9,
+        fats: 0.1,
+        carbs: 1.9,
+        proteins: 0.4,
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe("Tomato");
+    expect(res.body.servingSize).toBe(50);
+  });
+
+  test("food not in database", async () => {
+    const res = await request(app)
+      .put("/food/61546e2e75b78614c8ff7de4")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        name: "Tomato",
+        servingSize: 50,
+        servingUnit: "g",
+        calories: 9,
+        fats: 0.1,
+        carbs: 1.9,
+        proteins: 0.4,
+      });
+    expect(res.status).toBe(404);
+    expect(res.body.detail).toBe("Food not found");
+  });
+
+  test("missing required fields", async () => {
+    await sampleData.addFakeFoods();
+
+    const res = await request(app)
+      .put("/food/61546e2e75b78614c8ff7de4")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        name: "Tomato",
+        servingUnit: "g",
+        calories: 9,
+        fats: 0.1,
+        carbs: 1.9,
+      });
+    expect(res.status).toBe(422);
+    expect(res.body.detail).toBe(
+      "Missing required food item information - servingSize, proteins"
+    );
+  });
+
+  test("name already taken", async () => {
+    // trying to change Ground Beef to Tomato when Tomato already in database
+    await sampleData.addFakeFoods();
+
+    const res = await request(app)
+      .put("/food/61546e2e75b78614c8ff7de3")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        name: "Tomato",
+        servingSize: 50,
+        servingUnit: "g",
+        calories: 9,
+        fats: 0.1,
+        carbs: 1.9,
+        proteins: 0.4,
+      });
+    expect(res.status).toBe(409);
+    expect(res.body.detail).toBe("Food name is taken");
+  });
+});
