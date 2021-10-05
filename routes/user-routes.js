@@ -18,9 +18,12 @@ router.put("/", asyncWrapper(userController.editUserInfo));
 router.delete("/", asyncWrapper(userController.deleteExistingUser));
 
 // get nutrition info totals for specified date
-router.get("/user/:date/total", asyncWrapper(userController.getDateTotals));
+router.get("/:date/total", asyncWrapper(userController.getDateTotals));
 
 // get nutrition info totals for specified week
-router.get("/user/:week/total", asyncWrapper(userController.getWeekTotals));
+router.get("/:week/total", asyncWrapper(userController.getWeekTotals));
+
+// get recently used food items
+router.get("/recent-foods", asyncWrapper(userController.getRecentFoods));
 
 module.exports = router;

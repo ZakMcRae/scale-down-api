@@ -2,6 +2,7 @@ require("dotenv").config({ path: "/home/zak/js/TOP/scale-down/test/test.env" });
 
 const { test, expect, describe } = require("@jest/globals");
 const userRouter = require("../../routes/user-routes");
+const mealRouter = require("../../routes/meal-routes");
 
 const setUserFromToken = require("../../utils/setUserFromToken");
 const request = require("supertest");
@@ -13,6 +14,7 @@ app.use(setUserFromToken);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/user", userRouter);
+app.use("/meal", mealRouter);
 
 require("../utils/test-db-setup");
 
@@ -139,5 +141,59 @@ describe("tests of delete /user - deleteExistingUser", () => {
       });
     expect(res.status).toBe(200);
     expect(res.body.detail).toBe("User deleted");
+  });
+});
+
+describe("test of get /user/recent-foods - getRecentFoods", () => {
+  test("successful retrieval of recent foods", async () => {
+    // do a request to add a meal - should automatically create recent foods
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
+
+    await request(app)
+      .post("/meal")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        user: "61547b22c7c5959e24db1b8e",
+        name: "Dinner",
+        date: Date.now(),
+        foodList: [
+          {
+            foodItem: "61546e2e75b78614c8ff7de3",
+            servingSize: 50,
+            servingUnit: "g",
+          },
+        ],
+      });
+
+    // do a 2nd request to add a new food/meal - should automatically update recent foods
+    await request(app)
+      .post("/meal")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        user: "61547b22c7c5959e24db1b8e",
+        name: "Dinner",
+        date: Date.now(),
+        foodList: [
+          {
+            foodItem: "61546e2e75b78614c8ff7de4",
+            servingSize: 10,
+            servingUnit: "g",
+          },
+        ],
+      });
+
+    // now test the recent foods database retrieval
+    const res = await request(app)
+      .get("/user/recent-foods")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.foods.length).toBe(2);
   });
 });

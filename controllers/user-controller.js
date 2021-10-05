@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const RecentFoods = require("../models/recentFoods");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -100,6 +101,29 @@ exports.deleteExistingUser = async (req, res, next) => {
   await user.delete();
 
   return res.status(200).json({ detail: "User deleted" });
+};
+
+exports.getRecentFoods = async (req, res, next) => {
+  // check user auth
+  if (!req.userId) {
+    return res.status(401).json({ detail: "Not Authorized" });
+  }
+
+  const recentFoods = await RecentFoods.findOne({ user: req.userId }).populate({
+    path: "foods",
+    populate: { path: "foodItem", model: "FoodItem" },
+  });
+
+  // check if recentFoods is empty
+  if (recentFoods === null) {
+    return res.status(404).json({
+      detail:
+        "Recent Foods not found. They are automatically tracked when users create/edit meals",
+    });
+  }
+
+  // if no issues - send recentFoods
+  res.status(200).json(recentFoods);
 };
 
 //todo complete controller functions below - want to finish other routes first

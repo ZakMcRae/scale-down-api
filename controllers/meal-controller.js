@@ -1,4 +1,5 @@
 const Meal = require("../models/meal");
+const updateRecentFoods = require("../utils/update-recent-foods");
 
 exports.getMealInfo = async (req, res, next) => {
   // check user auth
@@ -74,6 +75,9 @@ exports.createNewMeal = async (req, res, next) => {
     path: "foodList",
     populate: { path: "foodItem", model: "FoodItem" },
   });
+
+  // update users recent foods list with used items
+  res.on("finish", () => updateRecentFoods(returnMeal));
 
   res.status(200).json(returnMeal);
 };
