@@ -82,6 +82,28 @@ describe("tests of post /food - createNewFoodItem", () => {
       "Missing required food item information - calories, carbs"
     );
   });
+
+  test("duplicate food name", async () => {
+    // add food so the request below will be a duplicate
+    await sampleData.addFakeFoods();
+
+    const res = await request(app)
+      .post("/food")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        name: "Tomato",
+        servingSize: 100,
+        servingUnit: "g",
+        calories: 18,
+        fats: 0.2,
+        carbs: 3.9,
+        proteins: 0.9,
+      });
+    expect(res.status).toBe(409);
+    expect(res.body.detail).toBe("Food name is taken");
+  });
 });
 
 describe("tests of put /food:id - editFoodItemInfo", () => {
