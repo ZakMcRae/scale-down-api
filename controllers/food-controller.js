@@ -22,7 +22,7 @@ exports.createNewFoodItem = async (req, res, next) => {
   }
 
   // check if foodname exists in database and reject request if true
-  const foodInDb = await FoodItem.findOne({ foodName: req.body.foodName });
+  const foodInDb = await FoodItem.findOne({ name: req.body.name });
 
   if (foodInDb !== null) {
     return res.status(409).json({ detail: "Food name is taken" });
