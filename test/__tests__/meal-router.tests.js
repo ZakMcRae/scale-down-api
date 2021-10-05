@@ -108,114 +108,124 @@ describe("tests of post /meal - createNewMeal", () => {
   });
 });
 
-// describe("tests of put /meal:id - editMealInfo", () => {
-//   test("success - edit item", async () => {
-//     await sampleData.addFakeMeal();
+describe("tests of put /meal:id - editMealInfo", () => {
+  test("success - edit item", async () => {
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
+    await sampleData.addFakeMeal();
 
-//     const res = await request(app)
-//       .put("/meal/61546e2e75b78614c8ff7de4")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       })
-//       .send({
-//         name: "Tomato",
-//         servingSize: 50,
-//         servingUnit: "g",
-//         calories: 9,
-//         fats: 0.1,
-//         carbs: 1.9,
-//         proteins: 0.4,
-//       });
-//     expect(res.status).toBe(200);
-//     expect(res.body.name).toBe("Tomato");
-//     expect(res.body.servingSize).toBe(50);
-//   });
+    const res = await request(app)
+      .put("/meal/61546e4775b78614c8ff7dea")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        user: "61547b22c7c5959e24db1b8e",
+        name: "Lunch",
+        date: Date.now(),
+        foodList: [
+          {
+            foodItem: "61546e2e75b78614c8ff7de3",
+            servingSize: 25,
+            servingUnit: "g",
+          },
+          {
+            foodItem: "61546e2e75b78614c8ff7de4",
+            servingSize: 5,
+            servingUnit: "g",
+          },
+        ],
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe("Lunch");
+    expect(res.body.totals.calories).toBe(83.9);
+  });
 
-//   test("meal not in database", async () => {
-//     const res = await request(app)
-//       .put("/meal/61546e2e75b78614c8ff7de4")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       })
-//       .send({
-//         name: "Tomato",
-//         servingSize: 50,
-//         servingUnit: "g",
-//         calories: 9,
-//         fats: 0.1,
-//         carbs: 1.9,
-//         proteins: 0.4,
-//       });
-//     expect(res.status).toBe(404);
-//     expect(res.body.detail).toBe("Meal not found");
-//   });
+  test("meal not in database", async () => {
+    // don't add any data to database
+    const res = await request(app)
+      .put("/meal/61546e4775b78614c8ff7dea")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        user: "61547b22c7c5959e24db1b8e",
+        name: "Lunch",
+        date: Date.now(),
+        foodList: [
+          {
+            foodItem: "61546e2e75b78614c8ff7de3",
+            servingSize: 25,
+            servingUnit: "g",
+          },
+          {
+            foodItem: "61546e2e75b78614c8ff7de4",
+            servingSize: 5,
+            servingUnit: "g",
+          },
+        ],
+      });
+    expect(res.status).toBe(404);
+    expect(res.body.detail).toBe("Meal not found");
+  });
 
-//   test("missing required fields", async () => {
-//     await sampleData.addFakeMeal();
+  test("missing required fields", async () => {
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
+    await sampleData.addFakeMeal();
 
-//     const res = await request(app)
-//       .put("/meal/61546e2e75b78614c8ff7de4")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       })
-//       .send({
-//         name: "Tomato",
-//         servingUnit: "g",
-//         calories: 9,
-//         fats: 0.1,
-//         carbs: 1.9,
-//       });
-//     expect(res.status).toBe(422);
-//     expect(res.body.detail).toBe(
-//       "Missing required meal item information - servingSize, proteins"
-//     );
-//   });
+    // body of request missing name and servingSize of foodList[0]
+    const res = await request(app)
+      .put("/meal/61546e4775b78614c8ff7dea")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({
+        user: "61547b22c7c5959e24db1b8e",
+        date: Date.now(),
+        foodList: [
+          {
+            foodItem: "61546e2e75b78614c8ff7de3",
+            servingUnit: "g",
+          },
+          {
+            foodItem: "61546e2e75b78614c8ff7de4",
+            servingSize: 10,
+            servingUnit: "g",
+          },
+        ],
+      });
+    expect(res.status).toBe(422);
+    expect(res.body.detail).toBe(
+      "Missing required meal item information - name, servingSize of foodList[0]"
+    );
+  });
+});
 
-//   test("name already taken", async () => {
-//     // trying to change Ground Beef to Tomato when Tomato already in database
-//     await sampleData.addFakeMeal();
+describe("tests of delete /meal:id - deleteExistingMeal", () => {
+  test("success - delete item", async () => {
+    // add meal to delete
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
+    await sampleData.addFakeMeal();
 
-//     const res = await request(app)
-//       .put("/meal/61546e2e75b78614c8ff7de3")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       })
-//       .send({
-//         name: "Tomato",
-//         servingSize: 50,
-//         servingUnit: "g",
-//         calories: 9,
-//         fats: 0.1,
-//         carbs: 1.9,
-//         proteins: 0.4,
-//       });
-//     expect(res.status).toBe(409);
-//     expect(res.body.detail).toBe("Meal name is taken");
-//   });
-// });
+    const res = await request(app)
+      .delete("/meal/61546e4775b78614c8ff7dea")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.detail).toBe("Meal deleted");
+  });
 
-// describe("tests of delete /meal:id - deleteExistingMeal", () => {
-//   test("success - delete item", async () => {
-//     // add meal to delete
-//     await sampleData.addFakeMeal();
-
-//     const res = await request(app)
-//       .delete("/meal/61546e2e75b78614c8ff7de4")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       });
-//     expect(res.status).toBe(200);
-//     expect(res.body.detail).toBe("Meal deleted");
-//   });
-
-//   test("item not in database", async () => {
-//     // empty database - nothing to delete
-//     const res = await request(app)
-//       .delete("/meal/61546e2e75b78614c8ff7de4")
-//       .set({
-//         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
-//       });
-//     expect(res.status).toBe(404);
-//     expect(res.body.detail).toBe("Meal not found");
-//   });
-// });
+  test("item not in database", async () => {
+    // empty database - nothing to delete
+    const res = await request(app)
+      .delete("/meal/61546e4775b78614c8ff7dea")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      });
+    expect(res.status).toBe(404);
+    expect(res.body.detail).toBe("Meal not found");
+  });
+});
