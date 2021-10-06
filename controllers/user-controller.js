@@ -156,6 +156,12 @@ exports.getUserTotals = async (req, res, next) => {
   } else if (req.query.startDate && req.query.endDate) {
     searchStartDate = new Date(req.query.startDate);
     searchEndDate = new Date(req.query.endDate);
+    // send error response if using date range and only specifying 1 of 2 dates
+  } else if (req.query.startDate || req.query.endDate) {
+    res.status(400).json({
+      detail:
+        "You only specified either startDate or endDate. You must send both. For 1 date use 'date' instead",
+    });
   } else {
     // defaults to todays date as no parameters were passed
     // time removed from date, we only want to match on date ranges - not specific hours, min,...

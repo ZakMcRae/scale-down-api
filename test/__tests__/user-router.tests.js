@@ -197,3 +197,104 @@ describe("test of get /user/recent-foods - getRecentFoods", () => {
     expect(res.body.foods.length).toBe(2);
   });
 });
+
+// todo - test getUserTotals
+describe("tests of get /user/totals - getUserTotals", () => {
+  test("successful - no parameters passed, uses default today", async () => {
+    // add a fake meal to get totals of
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
+    await sampleData.addFakeMeal();
+
+    const res = await request(app)
+      .get("/user/totals")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.totals.calories).toBe(1513.76);
+  });
+
+  test("successful - date passed in", async () => {
+    // add a fake meal to get totals of
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
+    await sampleData.addFakeMeal();
+
+    // search date of today since addFakeMeal added just prior
+    // Date() does months 0-11 - add 1 to month to get typical representation
+    const today = new Date();
+    const [year, month, day] = [
+      today.getFullYear(),
+      today.getMonth() + 1,
+      today.getDate(),
+    ];
+    const searchDate = `${year}-${month}-${day}`;
+
+    const res = await request(app)
+      .get("/user/totals")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .query({ date: searchDate });
+
+    expect(res.status).toBe(200);
+    expect(res.body.totals.calories).toBe(1513.76);
+  });
+
+  test("successful - date range passed in", async () => {
+    // add a fake meal to get totals of
+    await sampleData.addFakeUser();
+    await sampleData.addFakeFoods();
+    await sampleData.addFakeMeal();
+
+    // very wide search range since only using test db - test valid until 2099
+    const startDate = "2021-01-01";
+    const endDate = "2099-01-01";
+
+    const res = await request(app)
+      .get("/user/totals")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .query({ startDate: startDate, endDate: endDate });
+
+    expect(res.status).toBe(200);
+    expect(res.body.totals.calories).toBe(1513.76);
+  });
+
+  test("failure - too many parameters", async () => {
+    const res = await request(app)
+      .get("/user/totals")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .query({
+        date: "2020-10-10",
+        startDate: "2020-10-10",
+        endDate: "2020-10-10",
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.detail).toBe(
+      "Too many options specified at once. Can only send just 'date' or both 'startDate' and 'endDate'"
+    );
+  });
+
+  test("failure - too few range parameters", async () => {
+    const res = await request(app)
+      .get("/user/totals")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .query({
+        startDate: "2020-10-10",
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.detail).toBe(
+      "You only specified either startDate or endDate. You must send both. For 1 date use 'date' instead"
+    );
+  });
+});
