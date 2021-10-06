@@ -27,7 +27,7 @@ exports.createNewMeal = async (req, res, next) => {
     return res.status(401).json({ detail: "Not Authorized" });
   }
 
-  // check if all meal properties present - return 422 with detail of missing info
+  // check if missing any required fields - return 422 with detail of missing info
   let missingFields = [];
 
   if (req.body.name === undefined) missingFields.push("name");
@@ -59,13 +59,7 @@ exports.createNewMeal = async (req, res, next) => {
   const newMeal = new Meal({
     user: req.body.user,
     name: req.body.name,
-    foodList: req.body.foodList.map((food) => {
-      return {
-        foodItem: food.foodItem,
-        servingSize: food.servingSize,
-        servingUnit: food.servingUnit,
-      };
-    }),
+    foodList: req.body.foodList,
   });
 
   await newMeal.save();
