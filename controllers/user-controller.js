@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Meal = require("../models/meal");
 const RecentFoods = require("../models/recentFoods");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -126,7 +127,69 @@ exports.getRecentFoods = async (req, res, next) => {
   res.status(200).json(recentFoods);
 };
 
-//todo complete controller functions below - want to finish other routes first
+// gets user nutrition totals for a specific timeframe (defaults to today if no query params passed)
+// as query param - can specify "date" for single day, or "startDate" and "endDate" to get a range
+exports.getUserTotals = async (req, res, next) => {
+  // check user auth
+  if (!req.userId) {
+    return res.status(401).json({ detail: "Not Authorized" });
+  }
 
-exports.getDateTotals;
-exports.getWeekTotals;
+  // check if passed too many parameters at once
+  if (req.query.date && req.query.startDate && req.query.endDate) {
+    return res.status(400).json({
+      detail:
+        "Too many options specified at once. Can only send just 'date' or both 'startDate' and 'endDate'",
+    });
+  }
+
+  // set search dates based on query parameters
+  let searchStartDate = new Date();
+  let searchEndDate = new Date();
+
+  // set search for specific date
+  if (req.query.date) {
+    searchStartDate = new Date(req.query.date);
+    searchEndDate = new Date(req.query.date);
+    searchEndDate.setDate(searchEndDate.getDate() + 1);
+    // set search for specific range
+  } else if (req.query.startDate && req.query.endDate) {
+    searchStartDate = new Date(req.query.startDate);
+    searchEndDate = new Date(req.query.endDate);
+  } else {
+    // defaults to todays date as no parameters were passed
+    // time removed from date, we only want to match on date ranges - not specific hours, min,...
+    searchStartDate.setHours(0, 0, 0, 0);
+    searchEndDate.setHours(0, 0, 0, 0);
+    searchEndDate.setDate(searchEndDate.getDate() + 1);
+  }
+
+  // in mongoose you have to search on dates in a range (even for single day) since our database has times included on dates
+  const meals = await Meal.find({
+    user: req.userId,
+    date: { $gte: searchStartDate, $lte: searchEndDate },
+  })
+    .populate({
+      path: "foodList",
+      populate: { path: "foodItem", model: "FoodItem" },
+    })
+    .exec();
+
+  // keep track of totals and add total of each meal from query "meals"
+  let totals = {
+    calories: 0,
+    fats: 0,
+    carbs: 0,
+    proteins: 0,
+  };
+
+  meals.map((meal) => {
+    totals.calories += meal.totals.calories;
+    totals.carbs += meal.totals.carbs;
+    totals.fats += meal.totals.fats;
+    totals.proteins += meal.totals.proteins;
+  });
+
+  // send totals with dates info
+  res.status(200).json({ user: req.userId, ...req.query, totals: totals });
+};

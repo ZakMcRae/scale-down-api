@@ -17,11 +17,8 @@ router.put("/", asyncWrapper(userController.editUserInfo));
 // delete an existing user
 router.delete("/", asyncWrapper(userController.deleteExistingUser));
 
-// get nutrition info totals for specified date
-router.get("/:date/total", asyncWrapper(userController.getDateTotals));
-
-// get nutrition info totals for specified week
-router.get("/:week/total", asyncWrapper(userController.getWeekTotals));
+// get nutrition info totals for specified date range
+router.get("/totals", asyncWrapper(userController.getUserTotals));
 
 // get recently used food items
 router.get("/recent-foods", asyncWrapper(userController.getRecentFoods));
