@@ -198,7 +198,6 @@ describe("test of get /user/recent-foods - getRecentFoods", () => {
   });
 });
 
-// todo - test getUserTotals
 describe("tests of get /user/totals - getUserTotals", () => {
   test("successful - no parameters passed, uses default today", async () => {
     // add a fake meal to get totals of
