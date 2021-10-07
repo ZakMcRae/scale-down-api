@@ -45,7 +45,7 @@ describe("tests of post /user - createNewUser", () => {
   test("create new user - success", async () => {
     const res = await request(app)
       .post("/user")
-      .send({ userName: "matt", password: "123" });
+      .send({ userName: "matt", password: "123456" });
     expect(res.status).toBe(200);
     expect(res.body.userName).toBe("matt");
   });
@@ -57,9 +57,17 @@ describe("tests of post /user - createNewUser", () => {
     // make request using same username
     const res = await request(app)
       .post("/user")
-      .send({ userName: "matt", password: "123" });
+      .send({ userName: "matt", password: "123456" });
     expect(res.status).toBe(409);
     expect(res.body.detail).toBe("Username is taken");
+  });
+
+  test("password too short", async () => {
+    const res = await request(app)
+      .post("/user")
+      .send({ userName: "matt", password: "123" });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Request body parameter(s) invalid");
   });
 });
 
@@ -70,7 +78,7 @@ describe("tests of post /user/token - createAuthToken", () => {
 
     const res = await request(app)
       .post("/user/token")
-      .send({ userName: "matt", password: "123" });
+      .send({ userName: "matt", password: "123456" });
     expect(res.status).toBe(200);
     expect(res.body.token_type).toBe("Bearer");
   });
@@ -78,7 +86,7 @@ describe("tests of post /user/token - createAuthToken", () => {
   test("username not in database", async () => {
     const res = await request(app)
       .post("/user/token")
-      .send({ userName: "matt" });
+      .send({ userName: "matt", password: "abcdef" });
     expect(res.status).toBe(404);
     expect(res.body.detail).toBe("User not found");
   });
@@ -90,8 +98,8 @@ describe("tests of post /user/token - createAuthToken", () => {
     // send request with an incorrect password
     const res = await request(app)
       .post("/user/token")
-      .send({ userName: "matt", password: "abc" });
-    expect(res.status).toBe(401);
+      .send({ userName: "matt", password: "abcdef" });
+    expect(res.status).toBe(403);
     expect(res.body.detail).toBe("Incorrect Password");
   });
 });
@@ -107,7 +115,7 @@ describe("tests of put /user - editUserInfo", () => {
       .set({
         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
       })
-      .send({ userName: "jim" });
+      .send({ userName: "jim", password: 123456 });
     expect(res.status).toBe(200);
     expect(res.body.userName).toBe("jim");
   });
@@ -122,9 +130,24 @@ describe("tests of put /user - editUserInfo", () => {
       .set({
         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
       })
-      .send({ userName: "matt" });
+      .send({ userName: "matt", password: 123456 });
     expect(res.status).toBe(409);
     expect(res.body.detail).toBe("Username is taken");
+  });
+
+  test("incorrect password", async () => {
+    // insert user into database - want username check to pass
+    sampleData.addFakeUser();
+
+    // edit user info
+    const res = await request(app)
+      .put("/user")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .send({ userName: "jim", password: "abcdef" });
+    expect(res.status).toBe(403);
+    expect(res.body.detail).toBe("Incorrect Password");
   });
 });
 
@@ -294,6 +317,24 @@ describe("tests of get /user/totals - getUserTotals", () => {
     expect(res.status).toBe(400);
     expect(res.body.detail).toBe(
       "You only specified either startDate or endDate. You must send both. For 1 date use 'date' instead"
+    );
+  });
+
+  test("incorrect date paramter format - 1 correct (YYYY-MM-DD), 1 incorrect", async () => {
+    // start date format is very wrong
+    const startDate = "a";
+    const endDate = "2099-01-01";
+
+    const res = await request(app)
+      .get("/user/totals")
+      .set({
+        Authorization: `Bearer ${process.env.TEST_TOKEN}`,
+      })
+      .query({ startDate: startDate, endDate: endDate });
+
+    expect(res.status).toBe(400);
+    expect(res.body.detail).toBe(
+      "Date parameter error - typically invalid date format. Should be YYYY-MM-DD"
     );
   });
 });

@@ -3,6 +3,22 @@ const Meal = require("../models/meal");
 const RecentFoods = require("../models/recentFoods");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const isValidParamDate = require("../utils/validate-date-param");
+const { body, validationResult } = require("express-validator");
+
+exports.userValidationChain = [
+  body("userName")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("userName is required")
+    .escape(),
+  body("password")
+    .trim()
+    .isLength({ min: 6 })
+    .withMessage("password should be at least 6 characters long.")
+    .escape(),
+];
 
 exports.getUserInfo = async (req, res, next) => {
   // check user auth
@@ -20,6 +36,16 @@ exports.getUserInfo = async (req, res, next) => {
 };
 
 exports.createNewUser = async (req, res, next) => {
+  // check for validation errors on req.body
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Request body parameter(s) invalid",
+      detail: errors.array(),
+    });
+  }
+
   // check if username exists in database and reject request if true
   const userInDb = await User.findOne({ userName: req.body.userName });
 
@@ -40,16 +66,26 @@ exports.createNewUser = async (req, res, next) => {
 };
 
 exports.createAuthToken = async (req, res, next) => {
-  const user = await User.findOne({ userName: req.body.userName });
+  // check for validation errors on req.body
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Request body parameter(s) invalid",
+      detail: errors.array(),
+    });
+  }
 
   // check if user exists in database
+  const user = await User.findOne({ userName: req.body.userName });
+
   if (user === null) {
     return res.status(404).json({ detail: "User not found" });
   }
 
   // check if password is correct compared to stored hashedPassword
   if (!(await bcrypt.compare(req.body.password, user.hashedPassword))) {
-    return res.status(401).json({ detail: "Incorrect Password" });
+    return res.status(403).json({ detail: "Incorrect Password" });
   }
 
   // create and return jwt containing user info
@@ -60,8 +96,19 @@ exports.createAuthToken = async (req, res, next) => {
 };
 
 exports.editUserInfo = async (req, res, next) => {
+  // check user auth
   if (!req.userId) {
     return res.status(401).json({ detail: "Not Authorized" });
+  }
+
+  // check for validation errors on req.body
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Request body parameter(s) invalid",
+      detail: errors.array(),
+    });
   }
 
   // check if new username exists in database
@@ -76,6 +123,11 @@ exports.editUserInfo = async (req, res, next) => {
   // check if user does not exist in database
   if (user === null) {
     return res.status(404).json({ detail: "User not found" });
+  }
+
+  // check if password is correct compared to stored hashedPassword
+  if (!(await bcrypt.compare(req.body.password, user.hashedPassword))) {
+    return res.status(403).json({ detail: "Incorrect Password" });
   }
 
   //edit and return user
@@ -140,6 +192,19 @@ exports.getUserTotals = async (req, res, next) => {
     return res.status(400).json({
       detail:
         "Too many options specified at once. Can only send just 'date' or both 'startDate' and 'endDate'",
+    });
+  }
+
+  // check if date parameter fits YYYY-MM-DD format
+  // isValidParamDate not a full validation, handles common cases
+  if (req.query !== null) {
+    Object.keys(req.query).map((param) => {
+      if (!isValidParamDate(req.query[param])) {
+        res.status(400).json({
+          detail:
+            "Date parameter error - typically invalid date format. Should be YYYY-MM-DD",
+        });
+      }
     });
   }
 
