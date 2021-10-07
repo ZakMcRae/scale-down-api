@@ -2,7 +2,7 @@ const FoodItem = require("../models/food-item");
 const { body, validationResult } = require("express-validator");
 
 exports.foodItemValidationChain = [
-  body("name").not().isEmpty().withMessage("name is required").escape(),
+  body("name").trim().not().isEmpty().withMessage("name is required").escape(),
   body("servingSize")
     .trim()
     .not()
