@@ -77,10 +77,8 @@ describe("tests of post /food - createNewFoodItem", () => {
         fats: 0.2,
         proteins: 0.9,
       });
-    expect(res.status).toBe(422);
-    expect(res.body.detail).toBe(
-      "Missing required food item information - calories, carbs"
-    );
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Request body parameter(s) invalid");
   });
 
   test("duplicate food name", async () => {
@@ -156,6 +154,7 @@ describe("tests of put /food:id - editFoodItemInfo", () => {
       .set({
         Authorization: `Bearer ${process.env.TEST_TOKEN}`,
       })
+      // missing servingSize and proteins in request
       .send({
         name: "Tomato",
         servingUnit: "g",
@@ -163,10 +162,8 @@ describe("tests of put /food:id - editFoodItemInfo", () => {
         fats: 0.1,
         carbs: 1.9,
       });
-    expect(res.status).toBe(422);
-    expect(res.body.detail).toBe(
-      "Missing required food item information - servingSize, proteins"
-    );
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Request body parameter(s) invalid");
   });
 
   test("name already taken", async () => {

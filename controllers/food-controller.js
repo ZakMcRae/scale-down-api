@@ -1,4 +1,50 @@
 const FoodItem = require("../models/food-item");
+const { body, validationResult } = require("express-validator");
+
+exports.foodItemValidationChain = [
+  body("name").not().isEmpty().withMessage("name is required").escape(),
+  body("servingSize")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("servingSize is required")
+    .isNumeric()
+    .escape(),
+  body("servingUnit")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("servingUnit is required")
+    .escape(),
+  body("calories")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("calories is required")
+    .isNumeric()
+    .escape(),
+  body("fats")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("fats is required")
+    .isNumeric()
+    .escape(),
+  body("carbs")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("carbs is required")
+    .isNumeric()
+    .escape(),
+  body("proteins")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("proteins is required")
+    .isNumeric()
+    .escape(),
+];
 
 exports.getFoodItemInfo = async (req, res, next) => {
   // check user auth
@@ -21,37 +67,21 @@ exports.createNewFoodItem = async (req, res, next) => {
     return res.status(401).json({ detail: "Not Authorized" });
   }
 
+  // check for validation errors on req.body
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Request body parameter(s) invalid",
+      detail: errors.array(),
+    });
+  }
+
   // check if foodname exists in database and reject request if true
   const foodInDb = await FoodItem.findOne({ name: req.body.name });
 
   if (foodInDb !== null) {
     return res.status(409).json({ detail: "Food name is taken" });
-  }
-
-  // check if all food item properties present - return 422 with detail of missing info
-  const requiredFields = [
-    "name",
-    "servingSize",
-    "servingUnit",
-    "calories",
-    "fats",
-    "carbs",
-    "proteins",
-  ];
-
-  let missingFields = [];
-  for (const field of requiredFields) {
-    if (req.body[field] === undefined) {
-      missingFields.push(field);
-    }
-  }
-
-  if (missingFields.length > 0) {
-    return res.status(422).json({
-      detail: `Missing required food item information - ${missingFields.join(
-        ", "
-      )}`,
-    });
   }
 
   // create new food and hash password
@@ -84,29 +114,13 @@ exports.editFoodItemInfo = async (req, res, next) => {
     return res.status(404).json({ detail: "Food not found" });
   }
 
-  // check if all food item properties present - return 422 with detail of missing info
-  const requiredFields = [
-    "name",
-    "servingSize",
-    "servingUnit",
-    "calories",
-    "fats",
-    "carbs",
-    "proteins",
-  ];
+  // check for validation errors on req.body
+  const errors = validationResult(req);
 
-  let missingFields = [];
-  for (const field of requiredFields) {
-    if (req.body[field] === undefined) {
-      missingFields.push(field);
-    }
-  }
-
-  if (missingFields.length > 0) {
-    return res.status(422).json({
-      detail: `Missing required food item information - ${missingFields.join(
-        ", "
-      )}`,
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Request body parameter(s) invalid",
+      detail: errors.array(),
     });
   }
 
