@@ -3,13 +3,21 @@ const mealController = require("../controllers/meal-controller");
 const asyncWrapper = require("../utils/async-wrapper");
 
 // create a new meal
-router.post("/", asyncWrapper(mealController.createNewMeal));
+router.post(
+  "/",
+  mealController.mealValidationChain,
+  asyncWrapper(mealController.createNewMeal)
+);
 
 // get meal info
 router.get("/:id", asyncWrapper(mealController.getMealInfo));
 
 // edit meal info
-router.put("/:id", asyncWrapper(mealController.editMealInfo));
+router.put(
+  "/:id",
+  mealController.mealValidationChain,
+  asyncWrapper(mealController.editMealInfo)
+);
 
 // delete an existing meal
 router.delete("/:id", asyncWrapper(mealController.deleteExistingMeal));

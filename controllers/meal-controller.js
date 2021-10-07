@@ -1,5 +1,30 @@
 const Meal = require("../models/meal");
 const updateRecentFoods = require("../utils/update-recent-foods");
+const { body, validationResult } = require("express-validator");
+
+exports.mealValidationChain = [
+  body("user").trim().not().isEmpty().withMessage("user is required").escape(),
+  body("name").trim().not().isEmpty().withMessage("name is required").escape(),
+  body("foodList.*.foodItem")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("foodItem is required")
+    .escape(),
+  body("foodList.*.servingSize")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("servingSize is required")
+    .isNumeric()
+    .escape(),
+  body("foodList.*.servingUnit")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("servingUnit is required")
+    .escape(),
+];
 
 exports.getMealInfo = async (req, res, next) => {
   // check user auth
@@ -27,31 +52,13 @@ exports.createNewMeal = async (req, res, next) => {
     return res.status(401).json({ detail: "Not Authorized" });
   }
 
-  // check if missing any required fields - return 422 with detail of missing info
-  let missingFields = [];
+  // check for validation errors on req.body
+  const errors = validationResult(req);
 
-  if (req.body.name === undefined) missingFields.push("name");
-  if (req.body.user === undefined) missingFields.push("user");
-  if (req.body.foodList === undefined) missingFields.push("foodList");
-  if (req.body.foodList !== undefined) {
-    req.body.foodList.map((food, index) => {
-      if (food.foodItem === undefined) {
-        missingFields.push(`foodItem of foodList ${index}`);
-      }
-      if (food.servingSize === undefined) {
-        missingFields.push(`servingSize of foodList ${index}`);
-      }
-      if (food.servingUnit === undefined) {
-        missingFields.push(`servingUnit of foodList ${index}`);
-      }
-    });
-  }
-
-  if (missingFields.length > 0) {
-    return res.status(422).json({
-      detail: `Missing required meal item information - ${missingFields.join(
-        ", "
-      )}`,
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Request body parameter(s) invalid",
+      detail: errors.array(),
     });
   }
 
@@ -90,31 +97,13 @@ exports.editMealInfo = async (req, res, next) => {
     return res.status(404).json({ detail: "Meal not found" });
   }
 
-  // check if all meal properties present - return 422 with detail of missing info
-  let missingFields = [];
+  // check for validation errors on req.body
+  const errors = validationResult(req);
 
-  if (req.body.name === undefined) missingFields.push("name");
-  if (req.body.user === undefined) missingFields.push("user");
-  if (req.body.foodList === undefined) missingFields.push("foodList");
-  if (req.body.foodList !== undefined) {
-    req.body.foodList.map((food, index) => {
-      if (food.foodItem === undefined) {
-        missingFields.push(`foodItem of foodList[${index}]`);
-      }
-      if (food.servingSize === undefined) {
-        missingFields.push(`servingSize of foodList[${index}]`);
-      }
-      if (food.servingUnit === undefined) {
-        missingFields.push(`servingUnit of foodList[${index}]`);
-      }
-    });
-  }
-
-  if (missingFields.length > 0) {
-    return res.status(422).json({
-      detail: `Missing required meal item information - ${missingFields.join(
-        ", "
-      )}`,
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: "Request body parameter(s) invalid",
+      detail: errors.array(),
     });
   }
 

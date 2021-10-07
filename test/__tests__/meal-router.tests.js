@@ -101,10 +101,8 @@ describe("tests of post /meal - createNewMeal", () => {
           },
         ],
       });
-    expect(res.status).toBe(422);
-    expect(res.body.detail).toBe(
-      "Missing required meal item information - name, servingSize of foodList 1"
-    );
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Request body parameter(s) invalid");
   });
 });
 
@@ -195,10 +193,8 @@ describe("tests of put /meal:id - editMealInfo", () => {
           },
         ],
       });
-    expect(res.status).toBe(422);
-    expect(res.body.detail).toBe(
-      "Missing required meal item information - name, servingSize of foodList[0]"
-    );
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Request body parameter(s) invalid");
   });
 });
 
