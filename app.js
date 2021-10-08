@@ -7,6 +7,22 @@ var logger = require("morgan");
 const mongoose = require("mongoose");
 const setUserFromToken = require("./utils/setUserFromToken");
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Scale Down API",
+      version: "1.0.0",
+    },
+  },
+  apis: ["./routes/*.js"], // files containing annotations as above
+};
+
+const swaggerSpec = swaggerJsdoc(options);
+
 var indexRouter = require("./routes/index");
 var userRouter = require("./routes/user-routes");
 var foodRouter = require("./routes/food-routes");
@@ -21,6 +37,7 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
 // middleware
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(logger("dev"));
 app.use(setUserFromToken);
 app.use(express.json());
