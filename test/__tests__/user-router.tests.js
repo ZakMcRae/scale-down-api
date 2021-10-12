@@ -100,7 +100,7 @@ describe("tests of post /user/token - createAuthToken", () => {
       .post("/user/token")
       .send({ userName: "matt", password: "abcdef" });
     expect(res.status).toBe(403);
-    expect(res.body.detail).toBe("Incorrect Password");
+    expect(res.body.detail).toBe("Incorrect password");
   });
 });
 

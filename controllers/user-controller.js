@@ -85,7 +85,7 @@ exports.createAuthToken = async (req, res, next) => {
 
   // check if password is correct compared to stored hashedPassword
   if (!(await bcrypt.compare(req.body.password, user.hashedPassword))) {
-    return res.status(403).json({ detail: "Incorrect Password" });
+    return res.status(403).json({ detail: "Incorrect password" });
   }
 
   // create and return jwt containing user info
