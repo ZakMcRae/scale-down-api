@@ -84,7 +84,7 @@ exports.createNewFoodItem = async (req, res, next) => {
     return res.status(409).json({ detail: "Food name is taken" });
   }
 
-  // create new food and hash password
+  // create new food
   const newFoodItem = new FoodItem({
     name: req.body.name,
     servingSize: req.body.servingSize,
