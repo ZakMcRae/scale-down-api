@@ -171,7 +171,7 @@ exports.getRecentFoods = async (req, res, next) => {
   if (recentFoods === null) {
     return res.status(404).json({
       detail:
-        "Recent Foods not found. They are automatically tracked when users create/edit meals",
+        "Recent Foods not found, user has never created a meal. They are automatically tracked when users create/edit meals",
     });
   }
 
@@ -200,7 +200,7 @@ exports.getUserTotals = async (req, res, next) => {
   if (req.query !== null) {
     Object.keys(req.query).map((param) => {
       if (!isValidParamDate(req.query[param])) {
-        res.status(400).json({
+        return res.status(400).json({
           detail:
             "Date parameter error - typically invalid date format. Should be YYYY-MM-DD",
         });
