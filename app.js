@@ -18,8 +18,29 @@ const options = {
       version: "1.0.0",
     },
   },
-  apis: ["./routes/*.js"],
+  apis: ["./routes/*.js", "./app.js"],
 };
+
+// Openapi tags
+/**
+ * @openapi
+ * tags:
+ *  - name: User
+ *  - name: Food
+ *  - name: Meal
+ */
+
+// Openapi Security Schema
+/**
+ * @openapi
+ * components:
+ *  securitySchemes:
+ *    bearerToken:
+ *      description: Get a bearer auth token from top end point below (POST /user/token) and paste it here
+ *      type: http
+ *      scheme: bearer
+ *      bearerFormat: JWT
+ */
 
 const swaggerSpec = swaggerJsdoc(options);
 
