@@ -38,6 +38,14 @@ const asyncWrapper = require("../utils/async-wrapper");
  *                    msg: "calories is required"
  *                    param: "calories"
  *                    location: "body"
+ *       401:
+ *         description: Not Authorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *              detail: Not Authorized
  *       409:
  *         description: Food name is taken
  *         content:
