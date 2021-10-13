@@ -15,6 +15,8 @@ const options = {
     openapi: "3.0.0",
     info: {
       title: "Scale Down API",
+      description:
+        "To get started, you can create an account in the POST /user endpoint below.<br/>Once you have an account, you can generate a token in the POST /user/token endpoint below.<br/>Copy that token, click on the authorize button or one of the lock buttons, and paste your token. You are now authorized for the locked routes.",
       version: "1.0.0",
     },
   },
