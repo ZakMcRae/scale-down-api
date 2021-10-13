@@ -238,9 +238,9 @@ router.delete("/:id", asyncWrapper(mealController.deleteExistingMeal));
  *        user: 61547b22c7c5959e24db1b8e
  *        name: Lunch
  *        foodList:
- *          -foodItem: 6165a98fa579134ccc0a6209
- *          -servingSize: 50
- *          -servingUnit: g
+ *          - foodItem: 6165a98fa579134ccc0a6209
+ *            servingSize: 50
+ *            servingUnit: g
  *
  *    MealOut:
  *      type: object
@@ -249,6 +249,9 @@ router.delete("/:id", asyncWrapper(mealController.deleteExistingMeal));
  *        -name
  *        -foodlist
  *      properties:
+ *        _id:
+ *          type: string
+ *          description: Meal id
  *        user:
  *          type: string
  *          description: Name of the food item
@@ -266,17 +269,39 @@ router.delete("/:id", asyncWrapper(mealController.deleteExistingMeal));
  *                type: number
  *              servingUnit:
  *                type: string
- *        _id:
- *          type: string
- *          description: Meal id
  *      example:
- *        user: 61547b22c7c5959e24db1b8e
- *        name: Lunch
- *        foodList:
- *          -foodItem: 6165a98fa579134ccc0a6209
- *          -servingSize: 50
- *          -servingUnit: g
  *        _id: 6165a9aba579134ccc0a620e
+ *        user: 61547b22c7c5959e24db1b8e
+ *        name: Dinner
+ *        foodList:
+ *          - foodItem:
+ *              _id: 6165a99ca579134ccc0a620c
+ *              name: Ground Beef
+ *              servingSize: 100
+ *              servingUnit: g
+ *              calories: 332
+ *              fats: 30
+ *              carbs: 0
+ *              proteins: 14
+ *            servingSize: 50
+ *            servingUnit: g
+ *          - foodItem:
+ *              _id: 6165a99ca579134ccc0a620c
+ *              name: Tomato
+ *              servingSize: 100
+ *              servingUnit: g
+ *              calories: 18
+ *              fats: 0.2
+ *              carbs: 3.9
+ *              proteins: 0.9
+ *            servingSize: 10
+ *            servingUnit: g
+ *        date: 2021-10-12T15:28:43.302Z
+ *        totals:
+ *          calories: 167.8
+ *          fats: 15.02
+ *          carbs: 0.39
+ *          proteins: 7.09
  */
 
 module.exports = router;
