@@ -6,6 +6,7 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const mongoose = require("mongoose");
 const setUserFromToken = require("./utils/setUserFromToken");
+const cors = require("cors");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -62,6 +63,7 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 // middleware
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(logger("dev"));
+app.use(cors());
 app.use(setUserFromToken);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
