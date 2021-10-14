@@ -1,4 +1,6 @@
-require("dotenv").config({ path: "/home/zak/js/TOP/scale-down/test/test.env" });
+require("dotenv").config({
+  path: "/home/zak/js/TOP/scale-down-api/test/test.env",
+});
 
 const { test, expect, describe } = require("@jest/globals");
 const foodRouter = require("../../routes/food-routes");
