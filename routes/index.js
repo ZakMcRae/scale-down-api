@@ -1,8 +1,9 @@
 var express = require("express");
 var router = express.Router();
 
+// redirect 'home' to api docs page
 router.get("/", function (req, res, next) {
-  res.send("Welcome! This is a temporary landing page");
+  return res.redirect("/api-docs");
 });
 
 module.exports = router;
