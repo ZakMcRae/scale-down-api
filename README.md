@@ -7,7 +7,7 @@ This API uses a mongoDB database to store user, food and meal data. There are en
 There are endpoints to deal with user login/auth using bcrpyt to hash passwords and JWT to generate authorization tokens.
 I built some utilities to store users most recently used foods and calculate nutrition infos depending on dates specified.
 
-[![](https://i.imgur.com/XZwLQqV.png)]
+![](https://i.imgur.com/XZwLQqV.png)
 
 ## Learned on project
 - working in a node.js project on an API
