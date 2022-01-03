@@ -1,6 +1,6 @@
 # scale-down-api
 Back end API for a calorie counting app w/ interactive docs.
-Not currently deployed anywhere. I am making the front end to go with this back end.
+Not currently deployed anywhere. Front end does not exist yet and is on pause as I am starting work professionally.
 
 ## Description
 This API uses a mongoDB database to store user, food and meal data. There are endpoints for CRUD purposes on the user, food and meal data.
