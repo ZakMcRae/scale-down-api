@@ -18,6 +18,9 @@ I built some utilities to store users most recently used foods and calculate nut
 - using swagger-jsdoc and swagger-ui-express
   - swagger-ui provides interactive documentation to your project
   - swagger-jsdoc allowed me to write docs inline with endpoints and still be used for swagger-ui docs
+- testing in jest
+  - integration test for every endpoint
+  - setup in memory database for testing(to not tamper with production database)
 
 ## Tech
 - Javascript (nodeJS)
