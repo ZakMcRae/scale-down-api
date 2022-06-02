@@ -2,6 +2,10 @@ const { beforeAll, beforeEach, afterAll } = require("@jest/globals");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 
+require("dotenv").config({
+  path: "./test/test.env",
+});
+
 let mongoServer, mongoUri;
 
 // before all tests - setup and connect to new in memory database
